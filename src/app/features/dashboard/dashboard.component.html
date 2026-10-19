@@ -1,0 +1,164 @@
+<section class="dashboard-container" role="main" aria-label="Panel principal de banca digital">
+  <header class="dashboard-header">
+    <h1>Bienvenido a tu Portal de Banca Digital</h1>
+    <p class="subtitle">Gestiona tus finanzas con total seguridad y facilidad</p>
+  </header>
+
+  <section class="metrics-summary" aria-labelledby="metrics-title">
+    <h2 id="metrics-title" class="sr-only">Resumen de métricas de rendimiento</h2>
+    <article class="metric-card" *ngIf="currentMetrics$ | async as metrics" aria-label="Métrica de Largest Contentful Paint">
+      <div class="metric-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">LCP</span>
+        <span class="metric-value" [attr.aria-label]="'Largest Contentful Paint: ' + metrics.lcp.value + ' milisegundos'">{{ metrics.lcp.value }}ms</span>
+        <span class="metric-rating" [class]="'rating-' + metrics.lcp.rating" aria-label="Calificación: " [attr.aria-label]="'Calificación LCP: ' + metrics.lcp.rating">
+          {{ metrics.lcp.rating | titlecase }}
+        </span>
+      </div>
+    </article>
+
+    <article class="metric-card" *ngIf="currentMetrics$ | async as metrics" aria-label="Métrica de First Input Delay">
+      <div class="metric-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">FID</span>
+        <span class="metric-value" [attr.aria-label]="'First Input Delay: ' + metrics.fid.value + ' milisegundos'">{{ metrics.fid.value }}ms</span>
+        <span class="metric-rating" [class]="'rating-' + metrics.fid.rating" [attr.aria-label]="'Calificación FID: ' + metrics.fid.rating">
+          {{ metrics.fid.rating | titlecase }}
+        </span>
+      </div>
+    </article>
+
+    <article class="metric-card" *ngIf="currentMetrics$ | async as metrics" aria-label="Métrica de Cumulative Layout Shift">
+      <div class="metric-icon" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+      </div>
+      <div class="metric-content">
+        <span class="metric-label">CLS</span>
+        <span class="metric-value" [attr.aria-label]="'Cumulative Layout Shift: ' + metrics.cls.value"
+              [attr.aria-label]="'CLS: ' + metrics.cls.value.toFixed(3)">{{ metrics.cls.value.toFixed(3) }}</span>
+        <span class="metric-rating" [class]="'rating-' + metrics.cls.rating" [attr.aria-label]="'Calificación CLS: ' + metrics.cls.rating">
+          {{ metrics.cls.rating | titlecase }}
+        </span>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-content" aria-labelledby="content-title">
+    <h2 id="content-title" class="section-title">Resumen de tu actividad</h2>
+    
+    <div class="content-grid">
+      <article class="account-summary" aria-labelledby="accounts-title">
+        <h3 id="accounts-title">Tus Cuentas</h3>
+        <ul class="account-list" role="list" aria-label="Lista de cuentas bancarias">
+          <li *ngFor="let account of accounts; trackBy: trackByAccountId" class="account-item">
+            <div class="account-info">
+              <span class="account-name">{{ account.name }}</span>
+              <span class="account-number">••••{{ account.lastFourDigits }}</span>
+            </div>
+            <div class="account-balance" [attr.aria-label]="'Saldo disponible: ' + (account.balance | currency)">
+              {{ account.balance | currency:account.currency }}
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <article class="recent-transactions" aria-labelledby="transactions-title">
+        <h3 id="transactions-title">Transacciones Recientes</h3>
+        <app-transaction-list
+          [transactions]="recentTransactions"
+          [loading]="transactionsLoading"
+          (transactionSelected)="onTransactionSelect($event)"
+          aria-label="Lista de transacciones recientes">
+        </app-transaction-list>
+      </article>
+    </div>
+  </section>
+
+  <section class="performance-insights" aria-labelledby="insights-title" *ngIf="performanceInsights$ | async as insights">
+    <h2 id="insights-title">Insights de Rendimiento</h2>
+    <div class="insights-grid">
+      <article class="insight-card" *ngFor="let insight of insights">
+        <div class="insight-header">
+          <span class="insight-category" [class]="'category-' + insight.category">{{ insight.category }}</span>
+          <span class="insight-priority" [attr.aria-label]="'Prioridad: ' + insight.priority">{{ insight.priority }}</span>
+        </div>
+        <p class="insight-description">{{ insight.description }}</p>
+        <div class="insight-metrics" *ngIf="insight.affectedMetrics?.length">
+          <span class="metric-tag" *ngFor="let metric of insight.affectedMetrics">
+            {{ metric }}
+          </span>
+        </div>
+        <button class="insight-action" (click)="applyInsight(insight)" [attr.aria-label]="'Aplicar sugerencia: ' + insight.description">
+          Aplicar sugerencia
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <aside class="quick-actions" aria-labelledby="actions-title">
+    <h2 id="actions-title" class="sr-only">Acciones rápidas</h2>
+    <nav aria-label="Acciones del portal">
+      <ul class="actions-list" role="list">
+        <li>
+          <a href="/transfer" class="action-button" aria-label="Realizar una transferencia">
+            <svg width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+            <span>Transferir</span>
+          </a>
+        </li>
+        <li>
+          <a href="/payments" class="action-button" aria-label="Ver pagos pendientes">
+            <svg width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            <span>Pagos</span>
+          </a>
+        </li>
+        <li>
+          <a href="/cards" class="action-button" aria-label="Gestionar tarjetas">
+            <svg width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+              <line x1="16" y1="5" x2="16" y2="19"></line>
+            </svg>
+            <span>Tarjetas</span>
+          </a>
+        </li>
+        <li>
+          <a href="/support" class="action-button" aria-label="Contactar soporte">
+            <svg width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Soporte</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </aside>
+
+  <footer class="dashboard-footer" role="contentinfo">
+    <p>&copy; 2024 Banco Digitalis. Todos los derechos reservados.</p>
+    <nav aria-label="Enlaces del pie de página">
+      <ul role="list">
+        <li><a href="/privacy">Política de Privacidad</a></li>
+        <li><a href="/terms">Términos y Condiciones</a></li>
+        <li><a href="/security">Seguridad</a></li>
+      </ul>
+    </nav>
+  </footer>
+</section>

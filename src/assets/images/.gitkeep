@@ -1,0 +1,4 @@
+// Este archivo mantiene la estructura del directorio en control de versiones
+// Los archivos de imagen se almacenan en este directorio
+// Formatos recomendados: WebP para imágenes con transparencia, JPEG para fotos
+// El pipeline de build optimiza automáticamente las imágenes en producción
